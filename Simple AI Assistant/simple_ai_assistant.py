@@ -1,17 +1,26 @@
 from openai import OpenAI
+from dotenv import load_dotenv
+import os
 
+load_dotenv()  # Load environment variables from .env file
 client = OpenAI(
-    base_url = "http://localhost:11434/v1",
-    api_key = "dummy_api_key"# No need for ollama model, just use the OpenAI API key
+    base_url = os.getenv("BASE_URL"),  # Set the base URL for the OpenAI API
+    api_key = os.getenv("API_KEY")# No need for ollama model, just use the OpenAI API key
 )
+while True:
+    user_input = input("You: ")
+    if user_input.lower() in ["exit", "quit", "bye", "goodbye"]:
+        print("Exiting the chat. Goodbye!")
+        break
 
-response = client.chat.completions.create(
-  model="qwen3:4b",
-  messages=[
-    {"role": "user", "content": "Hello!"}
-  ]
-)
-print("LLM response: ")
-print(response.choices[0].message.content)
+    response = client.chat.completions.create(
+        model=os.getenv("MODEL"),  # Set the model name for the chat completion
+        messages=[
+            {"role": "user", "content": user_input}
+        ]
+    )
+    print("LLM response: ")
+    print(response.choices[0].message.content)
+
 
 # Ollama->JSON(response) to OpenAI->Python object(chat completion) conversion is done automatically by the OpenAI Python SDK.
