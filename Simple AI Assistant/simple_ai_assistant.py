@@ -8,6 +8,8 @@ client = OpenAI(
     api_key = os.getenv("API_KEY")# No need for ollama model, just use the OpenAI API key
 )
 messages = []
+# Smarter way to set the system message for the assistant's behavior
+messages.append({"role": "system", "content": "Act like a very humble agent and respond always under 20 words"})  # System message to set the behavior of the assistant
 while True:
     user_input = input("You: ")
     if user_input.lower() in ["exit", "quit", "bye", "goodbye"]:
