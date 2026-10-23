@@ -1,6 +1,7 @@
 from openai import OpenAI
 from dotenv import load_dotenv
-from tools import TOOLS, FUNCTION_NAME_TO_FUNCTION_MAP
+from tools import TOOLS,run_tool
+from Utilities.utilities import log
 import json
 import os
 
@@ -35,20 +36,12 @@ while True:
         if not msg.tool_calls:
             break  # No tool calls, exit the inner loop
 
+        log(f"Step {step + 1}: model requested {len(msg.tool_calls)} tool call(s).")
+        
         messages.append(msg)  # Add the tool call message to the chat history
 
         for tool_call in msg.tool_calls:
-            function_name = tool_call.function.name
-            function_args = {}
-            try:
-                function_args = json.loads(tool_call.function.arguments) #function_args is a dictionary of the function arguments
-                fn = FUNCTION_NAME_TO_FUNCTION_MAP[function_name]
-                result = fn(**function_args)
-
-            except Exception as e:
-                result = f"Error executing tool '{function_name}': {str(e)}"
-                continue
-
+            result = run_tool(tool_call)  # Execute the tool call and get the result
             messages.append({
                 "role": "tool",
                 "tool_call_id":tool_call.id,
@@ -70,9 +63,8 @@ while True:
     # Chat history is added
     messages.append({"role": "assistant", "content": msg.content})    
 
-    print("Assistant: ")
     # in python we can access the content of the message using msg.content
-    print(msg.content)
+    print("Assistant: " + (msg.content or ""))
 
 
 # Ollama->JSON(response) to OpenAI->Python object(chat completion) conversion is done automatically by the OpenAI Python SDK.
